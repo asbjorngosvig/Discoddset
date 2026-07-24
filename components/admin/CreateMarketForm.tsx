@@ -35,7 +35,7 @@ export function CreateMarketForm({
       <h3 className="font-display text-xl tracking-wide text-neutral-100">Nyt marked</h3>
       <input
         name="title"
-        placeholder="Titel, fx Hvem falder i søen først?"
+        placeholder="Titel, fx Hvem vinder øl-maraton?"
         required
         className="w-full rounded-lg border border-felt-600 bg-felt-800 px-3 py-2 text-sm text-neutral-100 focus:border-accent focus:outline-none"
       />
