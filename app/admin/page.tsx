@@ -77,7 +77,7 @@ export default async function AdminPage({
 
   return (
     <div className="space-y-6 p-4 pb-24 pt-8">
-      <h1 className="font-display text-4xl tracking-wide text-accent-bright">Admin</h1>
+      <h1 className="font-display text-4xl tracking-wide text-accent-bright">Stub og Bjørn ONLY</h1>
 
       <CreateMarketForm categories={categories} />
 

@@ -43,7 +43,7 @@ export default async function LeaderboardPage() {
 
   return (
     <div className="p-4 pt-8">
-      <h1 className="mb-4 font-display text-4xl tracking-wide text-neutral-100">Rangliste</h1>
+      <h1 className="mb-4 font-display text-4xl tracking-wide text-neutral-100">Leaderboard</h1>
       <ul className="space-y-2">
         {rows.map((row, i) => {
           const rank = rankFor(i);
@@ -71,12 +71,12 @@ export default async function LeaderboardPage() {
               <div className="mt-1 flex items-center justify-between pl-7 text-xs text-neutral-500">
                 <span className={row.netProfit >= 0 ? "text-win" : "text-accent-bright"}>
                   {row.netProfit >= 0 ? "+" : ""}
-                  {formatKr(row.netProfit)} kr netto
+                  {formatKr(row.netProfit)} kr
                 </span>
                 <span>
-                  {row.wins}V–{row.losses}T
+                  {row.wins} W –{row.losses} L 
                 </span>
-                <span>Bedste gevinst: {formatKr(row.biggestWin)} kr</span>
+                <span>Største W: {formatKr(row.biggestWin)} kr</span>
               </div>
             </li>
           );

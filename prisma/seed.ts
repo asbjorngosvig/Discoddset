@@ -12,7 +12,7 @@ async function main() {
   await prisma.player.deleteMany();
 
   console.log("Creating players...");
-  const playerNames = ["Karl", "Klose", "klå", "Thom", "Lyng", "Zak"];
+  const playerNames = ["Karl", "Klose", "klå", "Thom", "Lyng", "Zak", "Stub", "Bjørn"];
   for (const name of playerNames) {
     await prisma.player.create({ data: { name } });
   }
