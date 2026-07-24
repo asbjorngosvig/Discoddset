@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
-import { BetStatus, BalanceTxnType, MarketStatus } from "./constants";
+import { BetStatus, BalanceTxnType, MarketStatus, MARKET_DAYS } from "./constants";
 
 /** Thrown for any rule violation — callers (server actions) turn this into a user-facing message. */
 export class BettingError extends Error {
@@ -247,10 +247,14 @@ export async function updateMarket(params: {
   title: string;
   description: string | null;
   categoryId: string | null;
+  day: string;
 }) {
-  const { marketId, title, description, categoryId } = params;
+  const { marketId, title, description, categoryId, day } = params;
   if (!title.trim()) {
     throw new BettingError("Markedet skal have en titel.");
+  }
+  if (!MARKET_DAYS.includes(day as (typeof MARKET_DAYS)[number])) {
+    throw new BettingError("Ugyldig dag.");
   }
 
   return prisma.$transaction(async (tx) => {
@@ -262,7 +266,7 @@ export async function updateMarket(params: {
 
     return tx.market.update({
       where: { id: marketId },
-      data: { title: title.trim(), description, categoryId },
+      data: { title: title.trim(), description, categoryId, day },
     });
   });
 }

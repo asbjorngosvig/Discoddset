@@ -17,6 +17,7 @@ import {
   adjustPlayerBalance,
   BettingError,
 } from "@/lib/betting";
+import { MARKET_DAYS, DEFAULT_MARKET_DAY } from "@/lib/constants";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -33,10 +34,14 @@ export async function createMarketAction(formData: FormData): Promise<ActionResu
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const categoryId = String(formData.get("categoryId") ?? "").trim();
+  const day = String(formData.get("day") ?? DEFAULT_MARKET_DAY).trim();
   const labels = formData.getAll("outcomeLabel").map((v) => String(v).trim());
   const oddsRaw = formData.getAll("outcomeOdds").map((v) => String(v).trim());
 
   if (!title) return { ok: false, error: "Giv markedet en titel." };
+  if (!MARKET_DAYS.includes(day as (typeof MARKET_DAYS)[number])) {
+    return { ok: false, error: "Ugyldig dag." };
+  }
 
   const outcomes = labels
     .map((label, i) => ({ label, odds: Number(oddsRaw[i]) }))
@@ -54,6 +59,7 @@ export async function createMarketAction(formData: FormData): Promise<ActionResu
       title,
       description: description || null,
       categoryId: categoryId || null,
+      day,
       outcomes: { create: outcomes },
     },
   });
@@ -154,6 +160,7 @@ export async function updateMarketAction(params: {
   title: string;
   description: string;
   categoryId: string;
+  day: string;
 }): Promise<ActionResult> {
   requireAdmin();
   try {
@@ -162,6 +169,7 @@ export async function updateMarketAction(params: {
       title: params.title,
       description: params.description.trim() || null,
       categoryId: params.categoryId || null,
+      day: params.day,
     });
   } catch (e) {
     if (e instanceof BettingError) return { ok: false, error: e.message };

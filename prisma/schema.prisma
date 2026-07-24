@@ -58,6 +58,10 @@ model Market {
   createdAt   DateTime  @default(now())
   settledAt   DateTime?
 
+  // One of lib/constants.ts's MARKET_DAYS ("Dag 1".."Dag 5", "Hele turen").
+  // Fixed trip schedule, not admin-creatable like Category.
+  day String @default("Hele turen")
+
   categoryId String?
   category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
@@ -66,6 +70,7 @@ model Market {
 
   @@index([status])
   @@index([categoryId])
+  @@index([day])
 }
 
 // A player blocked from betting on a specific market — e.g. blocking Thom

@@ -1,27 +1,48 @@
 import { requirePlayer } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { BetStatus } from "@/lib/constants";
+import { BetStatus, BalanceTxnType, STARTING_BALANCE } from "@/lib/constants";
 import { formatKr } from "@/lib/format";
 import { Sparkline } from "@/components/Sparkline";
 
 export default async function MePage() {
   const player = await requirePlayer();
 
-  const [bets, balanceTxns] = await Promise.all([
+  const [bets, adjustments] = await Promise.all([
     prisma.bet.findMany({
       where: { playerId: player.id },
       include: { outcome: { include: { market: true } } },
       orderBy: { createdAt: "desc" },
     }),
     prisma.balanceTransaction.findMany({
-      where: { playerId: player.id },
+      where: { playerId: player.id, type: BalanceTxnType.ADMIN_ADJUSTMENT },
       orderBy: { createdAt: "asc" },
     }),
   ]);
 
   const pending = bets.filter((b) => b.status === BetStatus.PENDING);
   const settled = bets.filter((b) => b.status !== BetStatus.PENDING);
-  const sparklineValues = [1000, ...balanceTxns.map((t) => t.balanceAfter)];
+
+  // The graph only moves once a bet is decided: placing one doesn't dip it,
+  // and a void nets to zero, so only WON/LOST bets (at their market's
+  // settlement time) and admin adjustments show up as movement here.
+  const events: { time: Date; delta: number }[] = [];
+  for (const bet of bets) {
+    if (bet.status === BetStatus.WON) {
+      events.push({
+        time: bet.outcome.market.settledAt ?? bet.createdAt,
+        delta: (bet.payout ?? 0) - bet.stake,
+      });
+    } else if (bet.status === BetStatus.LOST) {
+      events.push({ time: bet.outcome.market.settledAt ?? bet.createdAt, delta: -bet.stake });
+    }
+  }
+  for (const adj of adjustments) {
+    events.push({ time: adj.createdAt, delta: adj.amount });
+  }
+  events.sort((a, b) => a.time.getTime() - b.time.getTime());
+
+  let running = STARTING_BALANCE;
+  const sparklineValues = [running, ...events.map((e) => (running += e.delta))];
 
   return (
     <div className="p-4 pt-8">

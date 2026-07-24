@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { createMarketAction } from "@/app/admin/actions";
+import { MARKET_DAYS, DEFAULT_MARKET_DAY } from "@/lib/constants";
 
 export function CreateMarketForm({
   categories,
@@ -45,6 +46,17 @@ export function CreateMarketForm({
         rows={2}
         className="w-full rounded-lg border border-felt-600 bg-felt-800 px-3 py-2 text-sm text-neutral-100 focus:border-accent focus:outline-none"
       />
+      <select
+        name="day"
+        defaultValue={DEFAULT_MARKET_DAY}
+        className="w-full rounded-lg border border-felt-600 bg-felt-800 px-3 py-2 text-sm text-neutral-100 focus:border-accent focus:outline-none"
+      >
+        {MARKET_DAYS.map((d) => (
+          <option key={d} value={d}>
+            {d}
+          </option>
+        ))}
+      </select>
       {categories.length > 0 && (
         <select
           name="categoryId"

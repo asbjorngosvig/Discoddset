@@ -28,6 +28,12 @@ export type BalanceTxnType = (typeof BalanceTxnType)[keyof typeof BalanceTxnType
 
 export const STARTING_BALANCE = 1000;
 
+// Fixed set of trip days a market can be tagged with — unlike categories,
+// these aren't admin-creatable, they're the trip's actual schedule.
+export const MARKET_DAYS = ["Dag 1", "Dag 2", "Dag 3", "Dag 4", "Dag 5", "Hele turen"] as const;
+export type MarketDay = (typeof MARKET_DAYS)[number];
+export const DEFAULT_MARKET_DAY: MarketDay = "Hele turen";
+
 // Cookie names live here (not lib/session.ts) so middleware.ts — which runs
 // in the Edge runtime — can read them without pulling in Prisma/the Neon
 // driver through lib/session.ts's import chain.

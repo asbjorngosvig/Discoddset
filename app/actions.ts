@@ -6,14 +6,21 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { PLAYER_COOKIE, ADMIN_COOKIE, getCurrentPlayer } from "@/lib/session";
 import { placeBet, BettingError } from "@/lib/betting";
+import { getPlayerPin } from "@/lib/playerPins";
 
-export async function selectPlayerAction(formData: FormData) {
-  const playerId = String(formData.get("playerId") ?? "");
-  const next = String(formData.get("next") ?? "/");
-
-  const player = await prisma.player.findUnique({ where: { id: playerId } });
+export async function selectPlayerAction(params: {
+  playerId: string;
+  pin: string;
+  next: string;
+}): Promise<{ ok: false; error: string }> {
+  const player = await prisma.player.findUnique({ where: { id: params.playerId } });
   if (!player) {
-    throw new Error("Den spiller findes ikke længere.");
+    return { ok: false, error: "Den spiller findes ikke længere." };
+  }
+
+  const expectedPin = getPlayerPin(player.name);
+  if (!expectedPin || params.pin !== expectedPin) {
+    return { ok: false, error: "Forkert kode." };
   }
 
   cookies().set(PLAYER_COOKIE, player.id, {
@@ -22,7 +29,7 @@ export async function selectPlayerAction(formData: FormData) {
     maxAge: 60 * 60 * 24 * 90,
   });
 
-  redirect(next.startsWith("/") ? next : "/");
+  redirect(params.next.startsWith("/") ? params.next : "/");
 }
 
 export async function adminLoginAction(formData: FormData) {

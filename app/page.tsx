@@ -1,6 +1,6 @@
 import { requirePlayer } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { MarketStatus } from "@/lib/constants";
+import { MarketStatus, BetStatus } from "@/lib/constants";
 import { BalanceBar } from "@/components/BalanceBar";
 import { MarketsClient } from "@/components/MarketsClient";
 import { SettledMarkets } from "@/components/SettledMarkets";
@@ -12,8 +12,11 @@ export default async function MarketsPage() {
   const [openMarkets, settledMarkets, myBlocks] = await Promise.all([
     prisma.market.findMany({
       where: { status: MarketStatus.OPEN },
-      include: { outcomes: true, category: true },
-      orderBy: { createdAt: "desc" },
+      include: {
+        outcomes: { include: { bets: { where: { status: BetStatus.PENDING }, select: { stake: true } } } },
+        category: true,
+      },
+      orderBy: { createdAt: "asc" },
     }),
     prisma.market.findMany({
       where: { status: MarketStatus.SETTLED },
@@ -26,15 +29,23 @@ export default async function MarketsPage() {
 
   const blockedMarketIds = new Set(myBlocks.map((b) => b.marketId));
 
-  const marketsForClient = openMarkets.map((m) => ({
-    id: m.id,
-    title: m.title,
-    description: m.description,
-    closesAt: m.closesAt ? m.closesAt.toISOString() : null,
-    category: m.category ? { id: m.category.id, name: m.category.name } : null,
-    blocked: blockedMarketIds.has(m.id),
-    outcomes: m.outcomes.map((o) => ({ id: o.id, label: o.label, odds: o.odds })),
-  }));
+  const marketsForClient = openMarkets.map((m) => {
+    const totalStaked = m.outcomes.reduce(
+      (sum, o) => sum + o.bets.reduce((s, b) => s + b.stake, 0),
+      0,
+    );
+    return {
+      id: m.id,
+      title: m.title,
+      description: m.description,
+      closesAt: m.closesAt ? m.closesAt.toISOString() : null,
+      category: m.category ? { id: m.category.id, name: m.category.name } : null,
+      day: m.day,
+      blocked: blockedMarketIds.has(m.id),
+      totalStaked,
+      outcomes: m.outcomes.map((o) => ({ id: o.id, label: o.label, odds: o.odds })),
+    };
+  });
 
   const settledForClient = settledMarkets.map((m) => ({
     id: m.id,

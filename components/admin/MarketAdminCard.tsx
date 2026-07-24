@@ -13,6 +13,7 @@ import {
   toggleMarketBlockAction,
 } from "@/app/admin/actions";
 import { formatKr } from "@/lib/format";
+import { MARKET_DAYS } from "@/lib/constants";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -32,6 +33,7 @@ type Market = {
   closesAt: string | null;
   hasBets: boolean;
   categoryId: string | null;
+  day: string;
   outcomes: Outcome[];
 };
 
@@ -57,6 +59,7 @@ export function MarketAdminCard({
   const [titleDraft, setTitleDraft] = useState(market.title);
   const [descriptionDraft, setDescriptionDraft] = useState(market.description ?? "");
   const [categoryDraft, setCategoryDraft] = useState(market.categoryId ?? "");
+  const [dayDraft, setDayDraft] = useState(market.day);
 
   const [renamingOutcomeId, setRenamingOutcomeId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
@@ -123,6 +126,17 @@ export function MarketAdminCard({
                 placeholder="Beskrivelse (valgfri)"
                 className="w-full rounded-lg border border-felt-600 bg-felt-800 px-3 py-2 text-sm text-neutral-100 focus:border-accent focus:outline-none"
               />
+              <select
+                value={dayDraft}
+                onChange={(e) => setDayDraft(e.target.value)}
+                className="w-full rounded-lg border border-felt-600 bg-felt-800 px-3 py-2 text-sm text-neutral-100 focus:border-accent focus:outline-none"
+              >
+                {MARKET_DAYS.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
               {categories.length > 0 && (
                 <select
                   value={categoryDraft}
@@ -146,6 +160,7 @@ export function MarketAdminCard({
                     setTitleDraft(market.title);
                     setDescriptionDraft(market.description ?? "");
                     setCategoryDraft(market.categoryId ?? "");
+                    setDayDraft(market.day);
                   }}
                 >
                   Annuller
@@ -162,6 +177,7 @@ export function MarketAdminCard({
                           title: titleDraft,
                           description: descriptionDraft,
                           categoryId: categoryDraft,
+                          day: dayDraft,
                         }),
                       () => setEditingMarket(false),
                     )
@@ -182,6 +198,11 @@ export function MarketAdminCard({
           <span className="rounded-full border border-felt-600 px-2 py-0.5 text-[10px] uppercase tracking-wider text-neutral-400">
             {market.status === "OPEN" ? "ÅBEN" : "LUKKET"}
           </span>
+          {!editingMarket && (
+            <span className="rounded-full border border-felt-600 px-2 py-0.5 text-[10px] text-neutral-400">
+              {market.day}
+            </span>
+          )}
           {!editingMarket && (
             <button
               type="button"

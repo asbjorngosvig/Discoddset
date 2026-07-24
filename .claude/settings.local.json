@@ -26,7 +26,10 @@
       "Skill(update-config:*)",
       "Bash(node -e \"const s=require\\('C:/Desktop/Discoddset/.claude/settings.local.json'\\); console.log\\('VALID JSON'\\); console.log\\('defaultMode =', s.permissions.defaultMode\\); console.log\\('allow count =', s.permissions.allow.length\\)\")",
       "Bash(rm check-state.ts)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Select-Object Id,Path\")",
+      "Bash(powershell -Command \"Stop-Process -Id 14180,20744,21208 -Force -ErrorAction SilentlyContinue\")",
+      "Bash(node -e ' *)"
     ],
     "defaultMode": "auto"
   }

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { selectPlayerAction } from "@/app/actions";
+import { PlayerPicker } from "@/components/PlayerPicker";
 
 export default async function SelectPlayerPage({
   searchParams,
@@ -31,22 +31,7 @@ export default async function SelectPlayerPage({
           Ingen spillere endnu. Bed bookmakeren om at køre seed-scriptet.
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {players.map((player) => (
-            <form key={player.id} action={selectPlayerAction}>
-              <input type="hidden" name="playerId" value={player.id} />
-              <input type="hidden" name="next" value={next} />
-              <button
-                type="submit"
-                className="tap-target flex w-full items-center justify-center rounded-xl border border-felt-700 bg-felt-900 py-6 active:scale-95 active:border-accent"
-              >
-                <span className="font-display text-2xl tracking-wide text-neutral-100">
-                  {player.name}
-                </span>
-              </button>
-            </form>
-          ))}
-        </div>
+        <PlayerPicker players={players.map((p) => ({ id: p.id, name: p.name }))} next={next} />
       )}
     </div>
   );

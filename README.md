@@ -86,12 +86,33 @@ What's left is putting the app on Vercel:
    values straight from your local `.env`:
    - `DATABASE_URL`
    - `ADMIN_PIN` — pick a real PIN for the trip, not `1234`
+   - One `<NAME>_PIN` per player (see "Player PINs" below) — every player in
+     the DB needs one or they can't get past `/select-player`
 3. Deploy. Vercel runs `npm install` → `postinstall` (which runs
    `prisma generate`) → `npm run build` automatically; no other config
    needed.
 
-Everyone opens the deployed URL on their phone, picks their name, and bets.
-You open `/admin` from your phone with the PIN to run things.
+Everyone opens the deployed URL on their phone, picks their name, enters
+their PIN, and bets. You open `/admin` from your phone with the admin PIN to
+run things.
+
+### Player PINs
+
+Each player has their own 3-digit code, one env var per player: `<NAME>_PIN`
+(e.g. `KARL_PIN="677"`). Entered right after picking your name on
+`/select-player` — not real auth, same trust model as `ADMIN_PIN`, just
+enough to stop someone tapping a name that isn't theirs.
+
+**Env var names must be ASCII** — Next.js's env loader silently drops
+variables whose name contains non-ASCII characters (confirmed: `KLÅ_PIN`
+never reaches `process.env` at all, no error, just missing). For a player
+whose name has æ/ø/å, transliterate the env var key only (`lib/playerPins.ts`
+does this automatically when looking a name up): æ→ae, ø→o, å→a. So player
+"Bjørn" needs `BJORN_PIN`, not `BJØRN_PIN` — the player's name in the
+database keeps its real spelling, only the env var key is transliterated.
+Adding a player via "Tilføj spiller" in `/admin` doesn't create a PIN for
+them automatically — add the matching `<NAME>_PIN` env var yourself
+afterward.
 
 If you ever need a *different* Postgres provider instead of Neon (Vercel
 Postgres, Supabase, a self-hosted instance, whatever), nothing here is
@@ -103,10 +124,13 @@ the new provider.
 
 - `prisma/schema.prisma` — data model (Player, Market, Outcome, Bet,
   BalanceTransaction, Category, MarketBlock). A market can optionally belong
-  to one Category (admin-created, e.g. "Øl-maraton"); players filter the
-  open markets list by category on `/`. MarketBlock records a specific
-  player blocked from betting on a specific market (e.g. blocking Thom from
-  a market about Thom) — enforced both in `placeBet` and in the UI.
+  to one Category (admin-created, e.g. "Øl-maraton") and always has a `day`
+  (one of `lib/constants.ts`'s `MARKET_DAYS` — Dag 1..Dag 5, Hele turen);
+  players filter the open markets list by both on `/`. MarketBlock records a
+  specific player blocked from betting on a specific market (e.g. blocking
+  Thom from a market about Thom) — enforced both in `placeBet` and in the UI.
+- `lib/playerPins.ts` — looks up each player's PIN from its `<NAME>_PIN` env
+  var (see "Player PINs" above)
 - `prisma/migrations/` — version-controlled schema history; applied with
   `prisma migrate deploy` (or `dev` locally when you change the schema)
 - `lib/betting.ts` — every rule that moves money or changes market state
