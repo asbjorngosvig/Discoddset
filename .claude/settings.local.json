@@ -19,7 +19,13 @@
       "Bash(\"/c/Program Files/Docker/Docker/Docker Desktop.exe\")",
       "Bash(disown)",
       "Bash(grep -n \"^- \\\\`prisma/schema.prisma\\\\`\" README.md)",
-      "Bash(git add *)"
-    ]
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(node -e \"const s=require\\('C:/Desktop/Discoddset/.claude/settings.local.json'\\); console.log\\('VALID JSON'\\); console.log\\('defaultMode =', s.permissions.defaultMode\\); console.log\\('allow count =', s.permissions.allow.length\\)\")"
+    ],
+    "defaultMode": "auto"
   }
 }
