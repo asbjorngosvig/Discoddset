@@ -1,9 +1,9 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
+import { PLAYER_COOKIE, ADMIN_COOKIE } from "./constants";
 
-export const PLAYER_COOKIE = "playerId";
-export const ADMIN_COOKIE = "isAdmin";
+export { PLAYER_COOKIE, ADMIN_COOKIE };
 
 export async function getCurrentPlayer() {
   const playerId = cookies().get(PLAYER_COOKIE)?.value;

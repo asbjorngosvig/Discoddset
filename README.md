@@ -7,37 +7,51 @@ odds, everyone else bets from their phone.
 
 - Next.js (App Router) + TypeScript
 - Tailwind CSS
-- Postgres via Prisma, with all money-moving logic in [`lib/betting.ts`](lib/betting.ts)
+- Postgres (Neon) via Prisma, using Neon's serverless driver adapter
+  ([`lib/prisma.ts`](lib/prisma.ts)) so it works cleanly from Vercel's
+  serverless functions. All money-moving logic lives in
+  [`lib/betting.ts`](lib/betting.ts).
 - Server Actions for every mutation — no separate API layer
 - Cookie-based "auth": pick a name, no passwords. Admin routes are gated by a
   single shared PIN from an env var.
 
-## Local setup
+## Database
 
-Requires Node 18+ and Docker (for a local Postgres — no separate install
-needed).
+This project already has a Neon project connected (see `.neon` — safe to
+commit, no secrets in it) with the schema migrated and seeded. `.env` holds
+the real connection strings (`DATABASE_URL` pooled, `DATABASE_URL_UNPOOLED`
+direct — Prisma Migrate needs the direct one; app runtime queries use the
+pooled one). `.env` is gitignored, so anyone else working on this pulls their
+own with `npx neon env pull` (requires being added to the Neon project) or
+you share the values directly.
+
+If you'd rather develop against a fully local, throwaway database instead of
+the shared Neon one day-to-day, `docker-compose.yml` spins up a local
+Postgres:
 
 ```bash
 docker compose up -d
-npm install
-cp .env.example .env   # already points at the docker-compose database
-```
-
-Push the schema, then seed some demo data:
-
-```bash
-npx prisma db push
+# then point DATABASE_URL in .env at:
+# postgresql://sommerhus:sommerhus@localhost:5432/sommerhus
+npx prisma migrate deploy
 npm run db:seed
 ```
 
-Run the dev server:
+Switch `DATABASE_URL` back to the Neon string when you want to see real
+shared data again.
+
+## Local setup
+
+Requires Node 18+.
 
 ```bash
+npm install
 npm run dev
 ```
 
-Open `http://localhost:3000` on your phone (same Wi-Fi) or in a browser. Pick
-a player name to get in. Visit `/admin` and enter the PIN from `.env` to
+(`npm install` also runs `prisma generate` via `postinstall`.) Open
+`http://localhost:3000` on your phone (same Wi-Fi) or in a browser. Pick a
+player name to get in. Visit `/admin` and enter the PIN from `.env` to
 create/close/settle/void markets, add players, and adjust balances.
 
 ## Re-seeding
@@ -45,46 +59,64 @@ create/close/settle/void markets, add players, and adjust balances.
 `npm run db:seed` wipes all players, markets, bets, and balance history and
 recreates 6 demo players plus a handful of joke markets (some open, one
 already settled, one voided) so the app has something to look at immediately.
-**Only run this before a trip, against a throwaway/dev database** — once real
-players have real bets and balances, re-seeding deletes all of it. To add a
-player after that point, use the "Tilføj spiller" (add player) form on
-`/admin` instead — it creates them with the standard 1000 kr starting
-balance and doesn't touch anyone else's data.
+**Only run this before a trip** — once real players have real bets and
+balances, re-seeding deletes all of it. To add a player after that point, use
+the "Tilføj spiller" (add player) form on `/admin` instead — it creates them
+with the standard 1000 kr starting balance and doesn't touch anyone else's
+data.
 
-## Deploying (Vercel + Postgres)
+## Schema changes
 
-1. **Create a Postgres database.** [Neon](https://neon.tech) has a free tier,
-   provisions instantly, and pairs well with Vercel — but Vercel Postgres or
-   Supabase work identically since this is just a standard Prisma/Postgres
-   setup. Copy the connection string it gives you.
-2. **Push the schema to it once**, from your machine, before the first
-   deploy:
-   ```bash
-   DATABASE_URL="<your production connection string>" npx prisma db push
-   ```
-   (Optionally seed it too with the same env var prefix — see the warning
-   above about re-seeding a live database.)
-3. **Push this repo to GitHub** and import it in Vercel (or run `vercel` from
+The schema is under migration control (`prisma/migrations/`), not just
+`db push`. After editing `prisma/schema.prisma`:
+
+```bash
+npx prisma migrate dev --name <what-changed>
+```
+
+This updates the connected database (via `DATABASE_URL_UNPOOLED`), records a
+migration file, and regenerates the client. Commit the new migration folder.
+
+## Deploying (Vercel)
+
+The database side is already done — schema is migrated and seeded on Neon.
+What's left is putting the app on Vercel:
+
+1. **Push this repo to GitHub** and import it in Vercel (or run `vercel` from
    the CLI).
-4. **Set two environment variables** in the Vercel project settings:
-   - `DATABASE_URL` — the same connection string from step 1
+2. **Set environment variables** in the Vercel project settings — copy the
+   values straight from your local `.env`:
+   - `DATABASE_URL`
    - `ADMIN_PIN` — pick a real PIN for the trip, not `1234`
-5. Deploy. Vercel runs `npm install` → `postinstall` (which runs
+3. Deploy. Vercel runs `npm install` → `postinstall` (which runs
    `prisma generate`) → `npm run build` automatically; no other config
    needed.
 
 Everyone opens the deployed URL on their phone, picks their name, and bets.
 You open `/admin` from your phone with the PIN to run things.
 
+If you ever need a *different* Postgres provider instead of Neon (Vercel
+Postgres, Supabase, a self-hosted instance, whatever), nothing here is
+Neon-specific except the driver adapter in `lib/prisma.ts` — swap that file
+back to a plain `new PrismaClient()` (no adapter) and point `DATABASE_URL` at
+the new provider.
+
 ## Project layout
 
 - `prisma/schema.prisma` — data model (Player, Market, Outcome, Bet,
   BalanceTransaction)
+- `prisma/migrations/` — version-controlled schema history; applied with
+  `prisma migrate deploy` (or `dev` locally when you change the schema)
 - `lib/betting.ts` — every rule that moves money or changes market state
   (placing bets, closing/settling/voiding markets, editing odds, admin
   balance adjustments). Settlement and voiding are idempotent — calling them
   twice never double-pays.
+- `lib/prisma.ts` — Prisma client wired to Neon's serverless driver adapter
 - `lib/session.ts` — cookie-based player/admin session helpers
+- `lib/constants.ts` — cookie names and status/type constants. Cookie names
+  live here rather than in `lib/session.ts` specifically so `middleware.ts`
+  (Edge runtime) can read them without pulling in Prisma/the Neon driver
+  through `lib/session.ts`'s import chain
 - `middleware.ts` — redirects to `/select-player` if no player cookie is set
 - `app/` — the four screens (`/`, `/me`, `/leaderboard`, `/admin`) plus
   server actions
@@ -97,6 +129,7 @@ You open `/admin` from your phone with the PIN to run things.
   real photos any time (keep the filenames, or update the `avatar` path on
   the Player row to point at a new file). Recommended: square images,
   ideally ≥128×128px; they're rendered as circles.
+- `docker-compose.yml` — optional local-only Postgres, see "Database" above
 
 ## Notes
 

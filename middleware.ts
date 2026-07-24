@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { PLAYER_COOKIE } from "@/lib/session";
+import { PLAYER_COOKIE } from "@/lib/constants";
 
 // /admin gates itself with the PIN cookie (it needs to render its own login
 // form on the same route), so it's excluded here. Everything else needs a

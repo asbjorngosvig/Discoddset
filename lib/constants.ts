@@ -27,3 +27,9 @@ export const BalanceTxnType = {
 export type BalanceTxnType = (typeof BalanceTxnType)[keyof typeof BalanceTxnType];
 
 export const STARTING_BALANCE = 1000;
+
+// Cookie names live here (not lib/session.ts) so middleware.ts — which runs
+// in the Edge runtime — can read them without pulling in Prisma/the Neon
+// driver through lib/session.ts's import chain.
+export const PLAYER_COOKIE = "playerId";
+export const ADMIN_COOKIE = "isAdmin";

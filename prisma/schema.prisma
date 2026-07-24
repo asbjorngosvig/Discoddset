@@ -8,12 +8,18 @@
 // functional benefit.
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // DATABASE_URL is Neon's pooled connection (used at runtime, incl. via the
+  // driver adapter in lib/prisma.ts). Migrations go through the unpooled
+  // connection instead — pgbouncer-style poolers don't play well with the
+  // prepared statements Prisma Migrate issues.
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 // MarketStatus:    OPEN | CLOSED | SETTLED | VOID
