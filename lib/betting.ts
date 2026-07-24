@@ -232,6 +232,116 @@ export async function editOutcomeOdds(params: { outcomeId: string; odds: number 
 }
 
 // ---------------------------------------------------------------------------
+// Editing a market after creation
+// ---------------------------------------------------------------------------
+
+export async function updateMarket(params: {
+  marketId: string;
+  title: string;
+  description: string | null;
+  categoryId: string | null;
+}) {
+  const { marketId, title, description, categoryId } = params;
+  if (!title.trim()) {
+    throw new BettingError("Markedet skal have en titel.");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const market = await tx.market.findUnique({ where: { id: marketId } });
+    if (!market) throw new BettingError("Markedet blev ikke fundet.");
+    if (market.status === MarketStatus.SETTLED || market.status === MarketStatus.VOID) {
+      throw new BettingError("Afgjorte eller annullerede markeder kan ikke redigeres.");
+    }
+
+    return tx.market.update({
+      where: { id: marketId },
+      data: { title: title.trim(), description, categoryId },
+    });
+  });
+}
+
+export async function addOutcome(params: { marketId: string; label: string; odds: number }) {
+  const { marketId, label, odds } = params;
+  if (!label.trim()) throw new BettingError("Udfaldet skal have et navn.");
+  if (!Number.isFinite(odds) || odds <= 1) {
+    throw new BettingError("Odds skal være et tal større end 1.");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const market = await tx.market.findUnique({ where: { id: marketId } });
+    if (!market) throw new BettingError("Markedet blev ikke fundet.");
+    if (market.status !== MarketStatus.OPEN) {
+      throw new BettingError("Der kan kun tilføjes udfald til åbne markeder.");
+    }
+
+    return tx.outcome.create({ data: { marketId, label: label.trim(), odds } });
+  });
+}
+
+export async function renameOutcome(params: { outcomeId: string; label: string }) {
+  const { outcomeId, label } = params;
+  if (!label.trim()) throw new BettingError("Udfaldet skal have et navn.");
+
+  return prisma.$transaction(async (tx) => {
+    const outcome = await tx.outcome.findUnique({
+      where: { id: outcomeId },
+      include: { market: true },
+    });
+    if (!outcome) throw new BettingError("Udfaldet blev ikke fundet.");
+    if (outcome.market.status !== MarketStatus.OPEN) {
+      throw new BettingError("Der kan kun omdøbes udfald på åbne markeder.");
+    }
+
+    // Only blocked if THIS outcome has bets — unlike odds, renaming an
+    // outcome nobody has bet on yet doesn't change anyone else's exposure.
+    const betCount = await tx.bet.count({ where: { outcomeId } });
+    if (betCount > 0) {
+      throw new BettingError("Der kan ikke omdøbes et udfald, som allerede har væddemål.");
+    }
+
+    return tx.outcome.update({ where: { id: outcomeId }, data: { label: label.trim() } });
+  });
+}
+
+export async function removeOutcome(outcomeId: string) {
+  return prisma.$transaction(async (tx) => {
+    const outcome = await tx.outcome.findUnique({
+      where: { id: outcomeId },
+      include: { market: { include: { outcomes: true } } },
+    });
+    if (!outcome) throw new BettingError("Udfaldet blev ikke fundet.");
+    if (outcome.market.status !== MarketStatus.OPEN) {
+      throw new BettingError("Der kan kun fjernes udfald fra åbne markeder.");
+    }
+    if (outcome.market.outcomes.length <= 2) {
+      throw new BettingError("Et marked skal have mindst to udfald.");
+    }
+
+    const betCount = await tx.bet.count({ where: { outcomeId } });
+    if (betCount > 0) {
+      throw new BettingError("Der kan ikke fjernes et udfald, som allerede har væddemål.");
+    }
+
+    await tx.outcome.delete({ where: { id: outcomeId } });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Categories
+// ---------------------------------------------------------------------------
+
+export async function createCategory(name: string) {
+  if (!name.trim()) throw new BettingError("Kategorien skal have et navn.");
+
+  const existing = await prisma.category.findUnique({ where: { name: name.trim() } });
+  if (existing) {
+    throw new BettingError("Der findes allerede en kategori med det navn.");
+  }
+
+  return prisma.category.create({ data: { name: name.trim() } });
+}
+
+// ---------------------------------------------------------------------------
 // Admin balance adjustments (fines / bonuses)
 // ---------------------------------------------------------------------------
 

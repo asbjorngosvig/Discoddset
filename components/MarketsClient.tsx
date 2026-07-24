@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { BetSlip } from "@/components/BetSlip";
 
 export type Outcome = { id: string; label: string; odds: number };
@@ -9,21 +9,67 @@ export type Market = {
   title: string;
   description: string | null;
   closesAt: string | null;
+  category: { id: string; name: string } | null;
   outcomes: Outcome[];
 };
 
 export function MarketsClient({ markets, balance }: { markets: Market[]; balance: number }) {
   const [selected, setSelected] = useState<{ market: Market; outcome: Outcome } | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+
+  const categories = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const m of markets) {
+      if (m.category) seen.set(m.category.id, m.category.name);
+    }
+    return Array.from(seen, ([id, name]) => ({ id, name }));
+  }, [markets]);
+
+  const visibleMarkets = categoryFilter
+    ? markets.filter((m) => m.category?.id === categoryFilter)
+    : markets;
 
   return (
     <>
+      {categories.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto px-4 pb-1 pt-3">
+          <button
+            type="button"
+            onClick={() => setCategoryFilter(null)}
+            className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium ${
+              categoryFilter === null
+                ? "border-accent bg-accent text-white"
+                : "border-felt-600 text-neutral-400"
+            }`}
+          >
+            Alle
+          </button>
+          {categories.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => setCategoryFilter(c.id)}
+              className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium ${
+                categoryFilter === c.id
+                  ? "border-accent bg-accent text-white"
+                  : "border-felt-600 text-neutral-400"
+              }`}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="space-y-4 p-4">
-        {markets.length === 0 && (
+        {visibleMarkets.length === 0 && (
           <p className="rounded-xl border border-felt-700 bg-felt-900 p-4 text-center text-sm text-neutral-400">
-            Ingen åbne markeder lige nu. Vent på, at bookmakeren finder på noget.
+            {markets.length === 0
+              ? "Ingen åbne markeder lige nu. Vent på, at bookmakeren finder på noget."
+              : "Ingen markeder i denne kategori lige nu."}
           </p>
         )}
-        {markets.map((market) => (
+        {visibleMarkets.map((market) => (
           <MarketCard
             key={market.id}
             market={market}
@@ -53,6 +99,11 @@ function MarketCard({
 }) {
   return (
     <div className="rounded-xl border border-felt-700 bg-felt-900 p-4">
+      {market.category && (
+        <span className="mb-1 inline-block rounded-full border border-felt-600 px-2 py-0.5 text-[10px] uppercase tracking-wider text-neutral-400">
+          {market.category.name}
+        </span>
+      )}
       <h3 className="font-display text-2xl tracking-wide text-neutral-100">{market.title}</h3>
       {market.description && (
         <p className="mt-1 text-sm text-neutral-400">{market.description}</p>

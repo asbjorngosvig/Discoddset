@@ -8,6 +8,11 @@ import {
   settleMarket,
   voidMarket,
   editOutcomeOdds,
+  updateMarket,
+  addOutcome,
+  renameOutcome,
+  removeOutcome,
+  createCategory,
   adjustPlayerBalance,
   BettingError,
 } from "@/lib/betting";
@@ -26,6 +31,7 @@ export async function createMarketAction(formData: FormData): Promise<ActionResu
 
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
+  const categoryId = String(formData.get("categoryId") ?? "").trim();
   const labels = formData.getAll("outcomeLabel").map((v) => String(v).trim());
   const oddsRaw = formData.getAll("outcomeOdds").map((v) => String(v).trim());
 
@@ -46,6 +52,7 @@ export async function createMarketAction(formData: FormData): Promise<ActionResu
     data: {
       title,
       description: description || null,
+      categoryId: categoryId || null,
       outcomes: { create: outcomes },
     },
   });
@@ -133,6 +140,84 @@ export async function adjustBalanceAction(params: {
   requireAdmin();
   try {
     await adjustPlayerBalance(params);
+  } catch (e) {
+    if (e instanceof BettingError) return { ok: false, error: e.message };
+    throw e;
+  }
+  revalidateAll();
+  return { ok: true };
+}
+
+export async function updateMarketAction(params: {
+  marketId: string;
+  title: string;
+  description: string;
+  categoryId: string;
+}): Promise<ActionResult> {
+  requireAdmin();
+  try {
+    await updateMarket({
+      marketId: params.marketId,
+      title: params.title,
+      description: params.description.trim() || null,
+      categoryId: params.categoryId || null,
+    });
+  } catch (e) {
+    if (e instanceof BettingError) return { ok: false, error: e.message };
+    throw e;
+  }
+  revalidateAll();
+  return { ok: true };
+}
+
+export async function addOutcomeAction(params: {
+  marketId: string;
+  label: string;
+  odds: number;
+}): Promise<ActionResult> {
+  requireAdmin();
+  try {
+    await addOutcome(params);
+  } catch (e) {
+    if (e instanceof BettingError) return { ok: false, error: e.message };
+    throw e;
+  }
+  revalidateAll();
+  return { ok: true };
+}
+
+export async function renameOutcomeAction(params: {
+  outcomeId: string;
+  label: string;
+}): Promise<ActionResult> {
+  requireAdmin();
+  try {
+    await renameOutcome(params);
+  } catch (e) {
+    if (e instanceof BettingError) return { ok: false, error: e.message };
+    throw e;
+  }
+  revalidateAll();
+  return { ok: true };
+}
+
+export async function removeOutcomeAction(outcomeId: string): Promise<ActionResult> {
+  requireAdmin();
+  try {
+    await removeOutcome(outcomeId);
+  } catch (e) {
+    if (e instanceof BettingError) return { ok: false, error: e.message };
+    throw e;
+  }
+  revalidateAll();
+  return { ok: true };
+}
+
+export async function createCategoryAction(formData: FormData): Promise<ActionResult> {
+  requireAdmin();
+  const name = String(formData.get("name") ?? "");
+  try {
+    await createCategory(name);
   } catch (e) {
     if (e instanceof BettingError) return { ok: false, error: e.message };
     throw e;

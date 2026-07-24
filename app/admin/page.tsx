@@ -7,6 +7,7 @@ import { CreateMarketForm } from "@/components/admin/CreateMarketForm";
 import { MarketAdminCard } from "@/components/admin/MarketAdminCard";
 import { PlayerAdjustRow } from "@/components/admin/PlayerAdjustRow";
 import { AddPlayerForm } from "@/components/admin/AddPlayerForm";
+import { CategoryForm } from "@/components/admin/CategoryForm";
 
 export default async function AdminPage({
   searchParams,
@@ -17,7 +18,7 @@ export default async function AdminPage({
     return <PinForm hasError={searchParams.error === "1"} />;
   }
 
-  const [activeMarkets, historyMarkets, players] = await Promise.all([
+  const [activeMarkets, historyMarkets, players, categories] = await Promise.all([
     prisma.market.findMany({
       where: { status: { in: [MarketStatus.OPEN, MarketStatus.CLOSED] } },
       include: { outcomes: true },
@@ -30,6 +31,7 @@ export default async function AdminPage({
       take: 10,
     }),
     prisma.player.findMany({ orderBy: { name: "asc" } }),
+    prisma.category.findMany({ orderBy: { name: "asc" } }),
   ]);
 
   const marketsForClient = await Promise.all(
@@ -42,6 +44,7 @@ export default async function AdminPage({
         description: market.description,
         status: market.status as "OPEN" | "CLOSED",
         closesAt: market.closesAt ? market.closesAt.toISOString() : null,
+        categoryId: market.categoryId,
         hasBets,
         outcomes: market.outcomes.map((o) => {
           const exp = exposure.find((e) => e.outcomeId === o.id)!;
@@ -68,7 +71,24 @@ export default async function AdminPage({
     <div className="space-y-6 p-4 pb-24 pt-8">
       <h1 className="font-display text-4xl tracking-wide text-accent-bright">Admin</h1>
 
-      <CreateMarketForm />
+      <CreateMarketForm categories={categories} />
+
+      <section>
+        <h2 className="mb-2 text-xs uppercase tracking-wider text-neutral-500">Kategorier</h2>
+        {categories.length > 0 && (
+          <ul className="mb-2 flex flex-wrap gap-2">
+            {categories.map((c) => (
+              <li
+                key={c.id}
+                className="rounded-full border border-felt-600 px-3 py-1 text-xs text-neutral-300"
+              >
+                {c.name}
+              </li>
+            ))}
+          </ul>
+        )}
+        <CategoryForm />
+      </section>
 
       <section>
         <h2 className="mb-2 text-xs uppercase tracking-wider text-neutral-500">Aktive markeder</h2>
@@ -77,7 +97,7 @@ export default async function AdminPage({
         ) : (
           <div className="space-y-3">
             {marketsForClient.map((m) => (
-              <MarketAdminCard key={m.id} market={m} />
+              <MarketAdminCard key={m.id} market={m} categories={categories} />
             ))}
           </div>
         )}

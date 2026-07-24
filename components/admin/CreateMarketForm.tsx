@@ -3,7 +3,11 @@
 import { useState, useTransition } from "react";
 import { createMarketAction } from "@/app/admin/actions";
 
-export function CreateMarketForm() {
+export function CreateMarketForm({
+  categories,
+}: {
+  categories: { id: string; name: string }[];
+}) {
   const [outcomeCount, setOutcomeCount] = useState(2);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -41,6 +45,20 @@ export function CreateMarketForm() {
         rows={2}
         className="w-full rounded-lg border border-felt-600 bg-felt-800 px-3 py-2 text-sm text-neutral-100 focus:border-accent focus:outline-none"
       />
+      {categories.length > 0 && (
+        <select
+          name="categoryId"
+          defaultValue=""
+          className="w-full rounded-lg border border-felt-600 bg-felt-800 px-3 py-2 text-sm text-neutral-100 focus:border-accent focus:outline-none"
+        >
+          <option value="">Ingen kategori</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      )}
       <div className="space-y-2">
         {Array.from({ length: outcomeCount }).map((_, i) => (
           <div key={i} className="flex gap-2">

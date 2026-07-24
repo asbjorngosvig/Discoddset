@@ -102,13 +102,19 @@ the new provider.
 ## Project layout
 
 - `prisma/schema.prisma` — data model (Player, Market, Outcome, Bet,
-  BalanceTransaction)
+  BalanceTransaction, Category). A market can optionally belong to one
+  Category (admin-created, e.g. "Øl-maraton"); players filter the open
+  markets list by category on `/`.
 - `prisma/migrations/` — version-controlled schema history; applied with
   `prisma migrate deploy` (or `dev` locally when you change the schema)
 - `lib/betting.ts` — every rule that moves money or changes market state
-  (placing bets, closing/settling/voiding markets, editing odds, admin
-  balance adjustments). Settlement and voiding are idempotent — calling them
-  twice never double-pays.
+  (placing bets, closing/settling/voiding markets, editing odds, editing a
+  market's title/description/category, adding/renaming/removing outcomes,
+  admin balance adjustments). Settlement and voiding are idempotent — calling
+  them twice never double-pays. Renaming/removing an outcome is blocked once
+  that specific outcome has bets; odds edits are blocked once the market has
+  *any* bets (changing one outcome's odds still affects everyone else's
+  exposure).
 - `lib/prisma.ts` — Prisma client wired to Neon's serverless driver adapter
 - `lib/session.ts` — cookie-based player/admin session helpers
 - `lib/constants.ts` — cookie names and status/type constants. Cookie names

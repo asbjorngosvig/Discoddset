@@ -40,6 +40,14 @@ model Player {
   balanceTxns  BalanceTransaction[]
 }
 
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  markets Market[]
+}
+
 model Market {
   id          String    @id @default(cuid())
   title       String
@@ -49,9 +57,13 @@ model Market {
   createdAt   DateTime  @default(now())
   settledAt   DateTime?
 
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
   outcomes Outcome[]
 
   @@index([status])
+  @@index([categoryId])
 }
 
 model Outcome {

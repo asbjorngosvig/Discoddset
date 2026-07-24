@@ -12,7 +12,7 @@ export default async function MarketsPage() {
   const [openMarkets, settledMarkets] = await Promise.all([
     prisma.market.findMany({
       where: { status: MarketStatus.OPEN },
-      include: { outcomes: true },
+      include: { outcomes: true, category: true },
       orderBy: { createdAt: "desc" },
     }),
     prisma.market.findMany({
@@ -28,6 +28,7 @@ export default async function MarketsPage() {
     title: m.title,
     description: m.description,
     closesAt: m.closesAt ? m.closesAt.toISOString() : null,
+    category: m.category ? { id: m.category.id, name: m.category.name } : null,
     outcomes: m.outcomes.map((o) => ({ id: o.id, label: o.label, odds: o.odds })),
   }));
 
