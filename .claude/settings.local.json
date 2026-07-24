@@ -24,7 +24,9 @@
       "Bash(git push *)",
       "Skill(update-config)",
       "Skill(update-config:*)",
-      "Bash(node -e \"const s=require\\('C:/Desktop/Discoddset/.claude/settings.local.json'\\); console.log\\('VALID JSON'\\); console.log\\('defaultMode =', s.permissions.defaultMode\\); console.log\\('allow count =', s.permissions.allow.length\\)\")"
+      "Bash(node -e \"const s=require\\('C:/Desktop/Discoddset/.claude/settings.local.json'\\); console.log\\('VALID JSON'\\); console.log\\('defaultMode =', s.permissions.defaultMode\\); console.log\\('allow count =', s.permissions.allow.length\\)\")",
+      "Bash(rm check-state.ts)",
+      "Bash(git commit *)"
     ],
     "defaultMode": "auto"
   }
