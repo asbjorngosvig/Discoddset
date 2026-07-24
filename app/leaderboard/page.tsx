@@ -8,6 +8,8 @@ const RANKS = [
   { tier: "Diamond", src: "/lolRankIcons/diamond.png" },
   { tier: "Platinum", src: "/lolRankIcons/platinum.png" },
   { tier: "Gold", src: "/lolRankIcons/gold.png" },
+  { tier: "Gold", src: "/lolRankIcons/gold.png" },
+  { tier: "Silver", src: "/lolRankIcons/silver.png" },
   { tier: "Silver", src: "/lolRankIcons/silver.png" },
   { tier: "Bronze", src: "/lolRankIcons/bronze.png" },
 ];

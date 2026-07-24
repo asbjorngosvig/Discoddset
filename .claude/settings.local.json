@@ -17,7 +17,9 @@
       "Bash(powershell -Command \"Get-Service -Name '*docker*' -ErrorAction SilentlyContinue | Select-Object Name,Status\")",
       "Bash(ls \"/c/Program Files/Docker/Docker/Docker Desktop.exe\" 2>&1)",
       "Bash(\"/c/Program Files/Docker/Docker/Docker Desktop.exe\")",
-      "Bash(disown)"
+      "Bash(disown)",
+      "Bash(grep -n \"^- \\\\`prisma/schema.prisma\\\\`\" README.md)",
+      "Bash(git add *)"
     ]
   }
 }

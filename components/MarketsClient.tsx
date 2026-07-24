@@ -10,6 +10,7 @@ export type Market = {
   description: string | null;
   closesAt: string | null;
   category: { id: string; name: string } | null;
+  blocked: boolean;
   outcomes: Outcome[];
 };
 
@@ -113,19 +114,25 @@ function MarketCard({
           Lukker {new Date(market.closesAt).toLocaleString("da-DK")}
         </p>
       )}
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        {market.outcomes.map((outcome) => (
-          <button
-            key={outcome.id}
-            type="button"
-            onClick={() => onPick(outcome)}
-            className="tap-target flex flex-col items-center rounded-lg border border-felt-600 bg-felt-800 py-3 active:scale-95 active:border-accent"
-          >
-            <span className="text-sm text-neutral-300">{outcome.label}</span>
-            <span className="font-display text-3xl text-gold">{outcome.odds.toFixed(2)}</span>
-          </button>
-        ))}
-      </div>
+      {market.blocked ? (
+        <p className="mt-3 rounded-lg border border-felt-600 bg-felt-800 p-3 text-center text-sm text-neutral-500">
+          Du er blokeret fra at vædde på dette marked.
+        </p>
+      ) : (
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {market.outcomes.map((outcome) => (
+            <button
+              key={outcome.id}
+              type="button"
+              onClick={() => onPick(outcome)}
+              className="tap-target flex flex-col items-center rounded-lg border border-felt-600 bg-felt-800 py-3 active:scale-95 active:border-accent"
+            >
+              <span className="text-sm text-neutral-300">{outcome.label}</span>
+              <span className="font-display text-3xl text-gold">{outcome.odds.toFixed(2)}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

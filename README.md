@@ -1,6 +1,6 @@
 # Sommerhus Bookmaker
 
-Play-money betting on absurd weekend-trip events. One bookmaker sets the
+Play-money betting on summerhouse-trip events. One bookmaker sets the
 odds, everyone else bets from their phone.
 
 ## Stack
@@ -102,9 +102,11 @@ the new provider.
 ## Project layout
 
 - `prisma/schema.prisma` — data model (Player, Market, Outcome, Bet,
-  BalanceTransaction, Category). A market can optionally belong to one
-  Category (admin-created, e.g. "Øl-maraton"); players filter the open
-  markets list by category on `/`.
+  BalanceTransaction, Category, MarketBlock). A market can optionally belong
+  to one Category (admin-created, e.g. "Øl-maraton"); players filter the
+  open markets list by category on `/`. MarketBlock records a specific
+  player blocked from betting on a specific market (e.g. blocking Thom from
+  a market about Thom) — enforced both in `placeBet` and in the UI.
 - `prisma/migrations/` — version-controlled schema history; applied with
   `prisma migrate deploy` (or `dev` locally when you change the schema)
 - `lib/betting.ts` — every rule that moves money or changes market state

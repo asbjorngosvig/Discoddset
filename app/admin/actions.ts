@@ -13,6 +13,7 @@ import {
   renameOutcome,
   removeOutcome,
   createCategory,
+  setMarketBlock,
   adjustPlayerBalance,
   BettingError,
 } from "@/lib/betting";
@@ -218,6 +219,22 @@ export async function createCategoryAction(formData: FormData): Promise<ActionRe
   const name = String(formData.get("name") ?? "");
   try {
     await createCategory(name);
+  } catch (e) {
+    if (e instanceof BettingError) return { ok: false, error: e.message };
+    throw e;
+  }
+  revalidateAll();
+  return { ok: true };
+}
+
+export async function toggleMarketBlockAction(params: {
+  marketId: string;
+  playerId: string;
+  blocked: boolean;
+}): Promise<ActionResult> {
+  requireAdmin();
+  try {
+    await setMarketBlock(params);
   } catch (e) {
     if (e instanceof BettingError) return { ok: false, error: e.message };
     throw e;

@@ -38,6 +38,7 @@ model Player {
 
   bets         Bet[]
   balanceTxns  BalanceTransaction[]
+  marketBlocks MarketBlock[]
 }
 
 model Category {
@@ -61,9 +62,23 @@ model Market {
   category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
   outcomes Outcome[]
+  blocks   MarketBlock[]
 
   @@index([status])
   @@index([categoryId])
+}
+
+// A player blocked from betting on a specific market — e.g. blocking Thom
+// from "Does Thom jump in the lake?" so he can't bet on his own outcome.
+model MarketBlock {
+  id        String   @id @default(cuid())
+  marketId  String
+  market    Market   @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  playerId  String
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([marketId, playerId])
 }
 
 model Outcome {

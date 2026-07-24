@@ -18,7 +18,7 @@ export default async function AdminPage({
     return <PinForm hasError={searchParams.error === "1"} />;
   }
 
-  const [activeMarkets, historyMarkets, players, categories] = await Promise.all([
+  const [activeMarkets, historyMarkets, players, categories, marketBlocks] = await Promise.all([
     prisma.market.findMany({
       where: { status: { in: [MarketStatus.OPEN, MarketStatus.CLOSED] } },
       include: { outcomes: true },
@@ -32,7 +32,15 @@ export default async function AdminPage({
     }),
     prisma.player.findMany({ orderBy: { name: "asc" } }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),
+    prisma.marketBlock.findMany(),
   ]);
+
+  const blockedByMarket = new Map<string, string[]>();
+  for (const b of marketBlocks) {
+    const list = blockedByMarket.get(b.marketId) ?? [];
+    list.push(b.playerId);
+    blockedByMarket.set(b.marketId, list);
+  }
 
   const marketsForClient = await Promise.all(
     activeMarkets.map(async (market) => {
@@ -97,7 +105,13 @@ export default async function AdminPage({
         ) : (
           <div className="space-y-3">
             {marketsForClient.map((m) => (
-              <MarketAdminCard key={m.id} market={m} categories={categories} />
+              <MarketAdminCard
+                key={m.id}
+                market={m}
+                categories={categories}
+                players={players.map((p) => ({ id: p.id, name: p.name }))}
+                blockedPlayerIds={blockedByMarket.get(m.id) ?? []}
+              />
             ))}
           </div>
         )}

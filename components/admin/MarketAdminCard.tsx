@@ -10,6 +10,7 @@ import {
   addOutcomeAction,
   renameOutcomeAction,
   removeOutcomeAction,
+  toggleMarketBlockAction,
 } from "@/app/admin/actions";
 import { formatKr } from "@/lib/format";
 
@@ -37,9 +38,13 @@ type Market = {
 export function MarketAdminCard({
   market,
   categories,
+  players,
+  blockedPlayerIds,
 }: {
   market: Market;
   categories: { id: string; name: string }[];
+  players: { id: string; name: string }[];
+  blockedPlayerIds: string[];
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +64,31 @@ export function MarketAdminCard({
   const [addingOutcome, setAddingOutcome] = useState(false);
   const [newOutcomeLabel, setNewOutcomeLabel] = useState("");
   const [newOutcomeOdds, setNewOutcomeOdds] = useState("");
+
+  const [showBlocklist, setShowBlocklist] = useState(false);
+  const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set(blockedPlayerIds));
+
+  function toggleBlock(playerId: string, blocked: boolean) {
+    setError(null);
+    setBlockedIds((prev) => {
+      const next = new Set(prev);
+      if (blocked) next.add(playerId);
+      else next.delete(playerId);
+      return next;
+    });
+    startTransition(async () => {
+      const result = await toggleMarketBlockAction({ marketId: market.id, playerId, blocked });
+      if (!result.ok) {
+        setError(result.error);
+        setBlockedIds((prev) => {
+          const next = new Set(prev);
+          if (blocked) next.delete(playerId);
+          else next.add(playerId);
+          return next;
+        });
+      }
+    });
+  }
 
   function run(action: () => Promise<ActionResult>, onSuccess?: () => void) {
     setError(null);
@@ -334,6 +364,32 @@ export function MarketAdminCard({
             + Tilføj udfald
           </button>
         ))}
+
+      <div className="mt-3">
+        <button
+          type="button"
+          className="text-xs text-accent-bright"
+          onClick={() => setShowBlocklist((s) => !s)}
+        >
+          {showBlocklist
+            ? "Skjul blokerede spillere"
+            : `Blokerede spillere${blockedIds.size > 0 ? ` (${blockedIds.size})` : ""}`}
+        </button>
+        {showBlocklist && (
+          <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 rounded-lg bg-felt-800 p-2">
+            {players.map((p) => (
+              <label key={p.id} className="flex items-center gap-2 text-xs text-neutral-300">
+                <input
+                  type="checkbox"
+                  checked={blockedIds.has(p.id)}
+                  onChange={(e) => toggleBlock(p.id, e.target.checked)}
+                />
+                {p.name}
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
 
       {settling ? (
         <div className="mt-3 rounded-lg border border-gold-dim bg-felt-800 p-3">

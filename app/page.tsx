@@ -9,7 +9,7 @@ import { AutoRefresh } from "@/components/AutoRefresh";
 export default async function MarketsPage() {
   const player = await requirePlayer();
 
-  const [openMarkets, settledMarkets] = await Promise.all([
+  const [openMarkets, settledMarkets, myBlocks] = await Promise.all([
     prisma.market.findMany({
       where: { status: MarketStatus.OPEN },
       include: { outcomes: true, category: true },
@@ -21,7 +21,10 @@ export default async function MarketsPage() {
       orderBy: { settledAt: "desc" },
       take: 5,
     }),
+    prisma.marketBlock.findMany({ where: { playerId: player.id } }),
   ]);
+
+  const blockedMarketIds = new Set(myBlocks.map((b) => b.marketId));
 
   const marketsForClient = openMarkets.map((m) => ({
     id: m.id,
@@ -29,6 +32,7 @@ export default async function MarketsPage() {
     description: m.description,
     closesAt: m.closesAt ? m.closesAt.toISOString() : null,
     category: m.category ? { id: m.category.id, name: m.category.name } : null,
+    blocked: blockedMarketIds.has(m.id),
     outcomes: m.outcomes.map((o) => ({ id: o.id, label: o.label, odds: o.odds })),
   }));
 

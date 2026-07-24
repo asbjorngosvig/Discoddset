@@ -44,6 +44,13 @@ export async function placeBet(params: {
       throw new BettingError("Dette marked er lukket.");
     }
 
+    const block = await tx.marketBlock.findUnique({
+      where: { marketId_playerId: { marketId: outcome.marketId, playerId } },
+    });
+    if (block) {
+      throw new BettingError("Du er blokeret fra at vædde på dette marked.");
+    }
+
     // Re-read the player inside the transaction: two bets fired back-to-back
     // from the same phone (double tap) must not both pass the balance check
     // against a stale balance read from before either debit.
@@ -339,6 +346,28 @@ export async function createCategory(name: string) {
   }
 
   return prisma.category.create({ data: { name: name.trim() } });
+}
+
+// ---------------------------------------------------------------------------
+// Blocking a player from a specific market
+// ---------------------------------------------------------------------------
+
+export async function setMarketBlock(params: {
+  marketId: string;
+  playerId: string;
+  blocked: boolean;
+}) {
+  const { marketId, playerId, blocked } = params;
+
+  if (blocked) {
+    await prisma.marketBlock.upsert({
+      where: { marketId_playerId: { marketId, playerId } },
+      create: { marketId, playerId },
+      update: {},
+    });
+  } else {
+    await prisma.marketBlock.deleteMany({ where: { marketId, playerId } });
+  }
 }
 
 // ---------------------------------------------------------------------------
