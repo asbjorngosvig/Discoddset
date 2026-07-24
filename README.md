@@ -56,14 +56,12 @@ create/close/settle/void markets, add players, and adjust balances.
 
 ## Re-seeding
 
-`npm run db:seed` wipes all players, markets, bets, and balance history and
-recreates 6 demo players plus a handful of joke markets (some open, one
-already settled, one voided) so the app has something to look at immediately.
-**Only run this before a trip** — once real players have real bets and
-balances, re-seeding deletes all of it. To add a player after that point, use
-the "Tilføj spiller" (add player) form on `/admin` instead — it creates them
-with the standard 1000 kr starting balance and doesn't touch anyone else's
-data.
+`npm run db:seed` wipes all markets, bets, and balance history and recreates
+the player roster (Karl, Klose, klå, Thom, Lyng, Zak) at the standard 1000 kr
+starting balance — no demo markets. **Only run this to reset for a new
+trip** — once real bets/balances exist, re-seeding deletes all of it. To add
+a player without wiping anyone else's data, use the "Tilføj spiller" (add
+player) form on `/admin` instead.
 
 ## Schema changes
 
@@ -122,13 +120,9 @@ the new provider.
   server actions
 - `components/` — UI, split into player-facing components and
   `components/admin/`
-- `public/avatars/` — one image per player, referenced by path in the
-  `Player.avatar` column. Placeholder SVGs are checked in for the seeded
-  players (`karl.svg`, `klose.svg`, `kla.svg`, `thom.svg`, `william.svg`,
-  `zak.svg`) plus `default.svg` for anyone added later — swap the files with
-  real photos any time (keep the filenames, or update the `avatar` path on
-  the Player row to point at a new file). Recommended: square images,
-  ideally ≥128×128px; they're rendered as circles.
+- `public/ranks/` — the six leaderboard rank badges (Challenger down to
+  Bronze), assigned by position. Original placeholder art (not Riot Games'
+  emblems) — swap the files for real ones any time, same filenames.
 - `docker-compose.yml` — optional local-only Postgres, see "Database" above
 
 ## Notes

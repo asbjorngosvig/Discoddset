@@ -3,12 +3,11 @@
 import { useState, useTransition } from "react";
 import { adjustBalanceAction } from "@/app/admin/actions";
 import { formatKr } from "@/lib/format";
-import { Avatar } from "@/components/Avatar";
 
 export function PlayerAdjustRow({
   player,
 }: {
-  player: { id: string; name: string; avatar: string; balance: number };
+  player: { id: string; name: string; balance: number };
 }) {
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
@@ -40,10 +39,7 @@ export function PlayerAdjustRow({
   return (
     <div className="rounded-lg border border-felt-700 bg-felt-900 p-3">
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-2 text-sm text-neutral-200">
-          <Avatar src={player.avatar} name={player.name} size={24} />
-          {player.name}
-        </span>
+        <span className="text-sm text-neutral-200">{player.name}</span>
         <span className="font-display text-lg text-gold">{formatKr(player.balance)} kr</span>
       </div>
       <div className="mt-2 flex gap-2">

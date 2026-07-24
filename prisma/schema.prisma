@@ -33,7 +33,6 @@ datasource db {
 model Player {
   id        String   @id @default(cuid())
   name      String   @unique
-  avatar    String
   balance   Int      @default(1000)
   createdAt DateTime @default(now())
 

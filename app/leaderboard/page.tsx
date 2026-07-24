@@ -2,7 +2,19 @@ import { prisma } from "@/lib/prisma";
 import { requirePlayer } from "@/lib/session";
 import { BetStatus, STARTING_BALANCE } from "@/lib/constants";
 import { formatKr } from "@/lib/format";
-import { Avatar } from "@/components/Avatar";
+
+const RANKS = [
+  { tier: "Challenger", src: "/ranks/challenger.svg" },
+  { tier: "Diamond", src: "/ranks/diamond.svg" },
+  { tier: "Platinum", src: "/ranks/platinum.svg" },
+  { tier: "Gold", src: "/ranks/gold.svg" },
+  { tier: "Silver", src: "/ranks/silver.svg" },
+  { tier: "Bronze", src: "/ranks/bronze.svg" },
+];
+
+function rankFor(index: number) {
+  return RANKS[Math.min(index, RANKS.length - 1)]!;
+}
 
 export default async function LeaderboardPage() {
   await requirePlayer();
@@ -19,7 +31,6 @@ export default async function LeaderboardPage() {
     return {
       id: p.id,
       name: p.name,
-      avatar: p.avatar,
       balance: p.balance,
       netProfit: p.balance - STARTING_BALANCE,
       wins: won.length,
@@ -33,22 +44,19 @@ export default async function LeaderboardPage() {
       <h1 className="mb-4 font-display text-4xl tracking-wide text-neutral-100">Rangliste</h1>
       <ul className="space-y-2">
         {rows.map((row, i) => {
-          const isTop = i === 0;
-          const isBottom = i === rows.length - 1 && rows.length > 1;
+          const rank = rankFor(i);
           return (
             <li
               key={row.id}
               className={`rounded-xl border p-3 ${
-                isTop ? "border-gold bg-felt-900" : "border-felt-700 bg-felt-900"
+                i === 0 ? "border-gold bg-felt-900" : "border-felt-700 bg-felt-900"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-5 text-center text-sm text-neutral-500">{i + 1}</span>
-                  <Avatar src={row.avatar} name={row.name} size={32} />
+                  <img src={rank.src} alt={rank.tier} className="h-7 w-7 shrink-0" />
                   <span className="font-semibold text-neutral-100">{row.name}</span>
-                  {isTop && <span className="text-lg">👑</span>}
-                  {isBottom && <span className="text-lg">🥄</span>}
                 </div>
                 <span className="font-display text-2xl text-gold">
                   {formatKr(row.balance)} kr

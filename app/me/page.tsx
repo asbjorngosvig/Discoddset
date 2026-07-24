@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { BetStatus } from "@/lib/constants";
 import { formatKr } from "@/lib/format";
 import { Sparkline } from "@/components/Sparkline";
-import { Avatar } from "@/components/Avatar";
 
 export default async function MePage() {
   const player = await requirePlayer();
@@ -26,10 +25,7 @@ export default async function MePage() {
 
   return (
     <div className="p-4 pt-8">
-      <h1 className="flex items-center gap-3 font-display text-4xl tracking-wide text-neutral-100">
-        <Avatar src={player.avatar} name={player.name} size={44} />
-        {player.name}
-      </h1>
+      <h1 className="font-display text-4xl tracking-wide text-neutral-100">{player.name}</h1>
 
       <section className="mt-6 rounded-xl border border-felt-700 bg-felt-900 p-4">
         <h2 className="text-xs uppercase tracking-wider text-neutral-500">Saldohistorik</h2>

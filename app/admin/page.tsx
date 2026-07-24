@@ -89,7 +89,7 @@ export default async function AdminPage({
           {players.map((p) => (
             <PlayerAdjustRow
               key={p.id}
-              player={{ id: p.id, name: p.name, avatar: p.avatar, balance: p.balance }}
+              player={{ id: p.id, name: p.name, balance: p.balance }}
             />
           ))}
         </div>

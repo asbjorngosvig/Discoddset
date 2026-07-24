@@ -40,7 +40,7 @@ export default async function MarketsPage() {
   return (
     <div>
       <AutoRefresh />
-      <BalanceBar name={player.name} avatar={player.avatar} balance={player.balance} />
+      <BalanceBar name={player.name} balance={player.balance} />
       <MarketsClient markets={marketsForClient} balance={player.balance} />
       <SettledMarkets markets={settledForClient} />
     </div>

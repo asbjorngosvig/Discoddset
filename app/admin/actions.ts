@@ -118,7 +118,7 @@ export async function addPlayerAction(formData: FormData): Promise<ActionResult>
   if (existing) return { ok: false, error: "Der findes allerede en spiller med det navn." };
 
   await prisma.player.create({
-    data: { name, avatar: "/avatars/default.svg" },
+    data: { name },
   });
 
   revalidateAll();

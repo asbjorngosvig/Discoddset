@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { selectPlayerAction } from "@/app/actions";
-import { Avatar } from "@/components/Avatar";
 
 export default async function SelectPlayerPage({
   searchParams,
@@ -31,10 +30,11 @@ export default async function SelectPlayerPage({
               <input type="hidden" name="next" value={next} />
               <button
                 type="submit"
-                className="tap-target flex w-full flex-col items-center gap-2 rounded-xl border border-felt-700 bg-felt-900 py-5 active:scale-95 active:border-accent"
+                className="tap-target flex w-full items-center justify-center rounded-xl border border-felt-700 bg-felt-900 py-6 active:scale-95 active:border-accent"
               >
-                <Avatar src={player.avatar} name={player.name} size={64} />
-                <span className="text-base font-semibold text-neutral-100">{player.name}</span>
+                <span className="font-display text-2xl tracking-wide text-neutral-100">
+                  {player.name}
+                </span>
               </button>
             </form>
           ))}
