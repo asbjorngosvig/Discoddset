@@ -4,12 +4,12 @@ import { BetStatus, STARTING_BALANCE } from "@/lib/constants";
 import { formatKr } from "@/lib/format";
 
 const RANKS = [
-  { tier: "Challenger", src: "/ranks/challenger.svg" },
-  { tier: "Diamond", src: "/ranks/diamond.svg" },
-  { tier: "Platinum", src: "/ranks/platinum.svg" },
-  { tier: "Gold", src: "/ranks/gold.svg" },
-  { tier: "Silver", src: "/ranks/silver.svg" },
-  { tier: "Bronze", src: "/ranks/bronze.svg" },
+  { tier: "Challenger", src: "/lolRankIcons/challenger.png" },
+  { tier: "Diamond", src: "/lolRankIcons/diamond.png" },
+  { tier: "Platinum", src: "/lolRankIcons/platinum.png" },
+  { tier: "Gold", src: "/lolRankIcons/gold.png" },
+  { tier: "Silver", src: "/lolRankIcons/silver.png" },
+  { tier: "Bronze", src: "/lolRankIcons/bronze.png" },
 ];
 
 function rankFor(index: number) {
@@ -55,7 +55,11 @@ export default async function LeaderboardPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-5 text-center text-sm text-neutral-500">{i + 1}</span>
-                  <img src={rank.src} alt={rank.tier} className="h-7 w-7 shrink-0" />
+                  <img
+                    src={rank.src}
+                    alt={rank.tier}
+                    className="h-9 w-9 shrink-0 object-contain"
+                  />
                   <span className="font-semibold text-neutral-100">{row.name}</span>
                 </div>
                 <span className="font-display text-2xl text-gold">

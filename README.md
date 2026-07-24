@@ -126,9 +126,8 @@ the new provider.
   server actions
 - `components/` — UI, split into player-facing components and
   `components/admin/`
-- `public/ranks/` — the six leaderboard rank badges (Challenger down to
-  Bronze), assigned by position. Original placeholder art (not Riot Games'
-  emblems) — swap the files for real ones any time, same filenames.
+- `public/lolRankIcons/` — the six leaderboard rank badges (Challenger down
+  to Bronze), assigned by leaderboard position.
 - `docker-compose.yml` — optional local-only Postgres, see "Database" above
 
 ## Notes
