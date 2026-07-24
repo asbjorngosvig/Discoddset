@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx prisma *)",
+      "Bash(npx tsc *)",
+      "Bash(rm -f \"C:/Users/Asbjørn/AppData/Local/Temp/claude/C--Desktop-Discoddset/ab4541a2-fdb0-47e6-acba-d7de6379411e/scratchpad/smoke-test.ts\")",
+      "Bash(npx tsx *)",
+      "Bash(rm -f scripts/smoke-test.ts prisma/dev.db)",
+      "Bash(rmdir scripts *)",
+      "Bash(npx next *)",
+      "Bash(powershell -Command \"Stop-Process -Id 2852 -Force\")",
+      "Bash(docker --version)",
+      "Bash(where postgres *)",
+      "Bash(where psql *)",
+      "Bash(docker run *)",
+      "Bash(powershell -Command \"Get-Process 'com.docker.backend' -ErrorAction SilentlyContinue | Select-Object Id\")",
+      "Bash(powershell -Command \"Get-Service -Name '*docker*' -ErrorAction SilentlyContinue | Select-Object Name,Status\")",
+      "Bash(ls \"/c/Program Files/Docker/Docker/Docker Desktop.exe\" 2>&1)",
+      "Bash(\"/c/Program Files/Docker/Docker/Docker Desktop.exe\")",
+      "Bash(disown)"
+    ]
+  }
+}

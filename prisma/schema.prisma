@@ -1,0 +1,101 @@
+// Sommerhus Bookmaker — schema
+//
+// Postgres-backed for deployment (see README for Neon/Vercel setup). The
+// project started on SQLite for local prototyping; status/type fields below
+// are still plain strings rather than native enums (see lib/constants.ts) —
+// that was originally so the schema worked unchanged on SQLite, and it's
+// harmless now, so it stayed that way rather than being churned for no
+// functional benefit.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// MarketStatus:    OPEN | CLOSED | SETTLED | VOID
+// BetStatus:       PENDING | WON | LOST | REFUNDED
+// BalanceTxnType:  BET_PLACED | BET_PAYOUT | BET_REFUND | ADMIN_ADJUSTMENT
+//
+// BalanceTransaction logs every change to a player's balance — this is what
+// powers the /me sparkline and the admin adjustment audit trail. It's a side
+// effect of the mutations in lib/betting.ts, never written to directly.
+
+model Player {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  avatar    String
+  balance   Int      @default(1000)
+  createdAt DateTime @default(now())
+
+  bets         Bet[]
+  balanceTxns  BalanceTransaction[]
+}
+
+model Market {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  status      String    @default("OPEN")
+  closesAt    DateTime?
+  createdAt   DateTime  @default(now())
+  settledAt   DateTime?
+
+  outcomes Outcome[]
+
+  @@index([status])
+}
+
+model Outcome {
+  id       String  @id @default(cuid())
+  marketId String
+  market   Market  @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  label    String
+  // Decimal odds, e.g. 2.50 means stake * 2.50 returned on a win.
+  odds     Float
+  isWinner Boolean @default(false)
+
+  bets Bet[]
+
+  @@index([marketId])
+}
+
+model Bet {
+  id       String @id @default(cuid())
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id])
+  outcomeId String
+  outcome   Outcome @relation(fields: [outcomeId], references: [id])
+
+  stake           Int
+  // Locked in at placement time so later odds edits never affect this bet.
+  oddsAtPlacement Float
+  status          String   @default("PENDING")
+  // Null until the bet is resolved (won/lost/refunded).
+  payout          Int?
+  createdAt       DateTime @default(now())
+
+  balanceTxns BalanceTransaction[]
+
+  @@index([playerId])
+  @@index([outcomeId])
+}
+
+model BalanceTransaction {
+  id           String   @id @default(cuid())
+  playerId     String
+  player       Player   @relation(fields: [playerId], references: [id])
+  type         String
+  // Signed delta applied to the balance (negative for stakes/fines).
+  amount       Int
+  balanceAfter Int
+  reason       String?
+  betId        String?
+  bet          Bet?     @relation(fields: [betId], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([playerId, createdAt])
+}
