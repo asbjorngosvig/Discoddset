@@ -25,7 +25,7 @@ export default async function MePage() {
 
   return (
     <div className="p-4 pt-8">
-      <h1 className="font-display text-4xl tracking-wide text-neutral-100">{player.name}</h1>
+      <h1 className="font-display text-4xl tracking-wide text-neutral-100 text-center">{player.name}</h1>
 
       <section className="mt-6 rounded-xl border border-felt-700 bg-felt-900 p-4">
         <h2 className="text-xs uppercase tracking-wider text-neutral-500">Saldohistorik</h2>

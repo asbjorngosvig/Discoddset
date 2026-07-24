@@ -21,7 +21,7 @@ export default async function SelectPlayerPage({
 
   return (
     <div className="flex min-h-screen flex-col justify-center px-6 py-10">
-      <h1 className="mb-1 font-display text-5xl tracking-wide text-accent-bright">
+      <h1 className="mb-1 font-display text-5xl tracking-wide text-accent-bright text-center">
         Hvem oddser?
       </h1>
 

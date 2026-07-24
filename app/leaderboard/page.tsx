@@ -43,7 +43,7 @@ export default async function LeaderboardPage() {
 
   return (
     <div className="p-4 pt-8">
-      <h1 className="mb-4 font-display text-4xl tracking-wide text-neutral-100">Leaderboard</h1>
+      <h1 className="mb-4 font-display text-4xl tracking-wide text-neutral-100 text-center">Leaderboard</h1>
       <ul className="space-y-2">
         {rows.map((row, i) => {
           const rank = rankFor(i);

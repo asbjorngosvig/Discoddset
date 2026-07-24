@@ -15,8 +15,8 @@ const sans = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Sommerhus Bookmaker",
-  description: "Legepenge-væddemål til sommerhusturen",
+  title: "Discoddset 2026",
+  description: "Sommerhustur 2026 Stub og Bjørn aktivitet",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
