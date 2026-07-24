@@ -33,7 +33,7 @@ export async function createMarketAction(formData: FormData): Promise<ActionResu
 
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
-  const categoryId = String(formData.get("categoryId") ?? "").trim();
+  const categoryIds = formData.getAll("categoryId").map((v) => String(v));
   const day = String(formData.get("day") ?? DEFAULT_MARKET_DAY).trim();
   const labels = formData.getAll("outcomeLabel").map((v) => String(v).trim());
   const oddsRaw = formData.getAll("outcomeOdds").map((v) => String(v).trim());
@@ -58,8 +58,8 @@ export async function createMarketAction(formData: FormData): Promise<ActionResu
     data: {
       title,
       description: description || null,
-      categoryId: categoryId || null,
       day,
+      categories: { create: categoryIds.map((categoryId) => ({ categoryId })) },
       outcomes: { create: outcomes },
     },
   });
@@ -159,7 +159,7 @@ export async function updateMarketAction(params: {
   marketId: string;
   title: string;
   description: string;
-  categoryId: string;
+  categoryIds: string[];
   day: string;
 }): Promise<ActionResult> {
   requireAdmin();
@@ -168,7 +168,7 @@ export async function updateMarketAction(params: {
       marketId: params.marketId,
       title: params.title,
       description: params.description.trim() || null,
-      categoryId: params.categoryId || null,
+      categoryIds: params.categoryIds,
       day: params.day,
     });
   } catch (e) {

@@ -11,7 +11,7 @@ export type Market = {
   title: string;
   description: string | null;
   closesAt: string | null;
-  category: { id: string; name: string } | null;
+  categories: { id: string; name: string }[];
   day: string;
   blocked: boolean;
   totalStaked: number;
@@ -26,14 +26,14 @@ export function MarketsClient({ markets, balance }: { markets: Market[]; balance
   const categories = useMemo(() => {
     const seen = new Map<string, string>();
     for (const m of markets) {
-      if (m.category) seen.set(m.category.id, m.category.name);
+      for (const c of m.categories) seen.set(c.id, c.name);
     }
     return Array.from(seen, ([id, name]) => ({ id, name }));
   }, [markets]);
 
   const visibleMarkets = markets.filter(
     (m) =>
-      (categoryFilter === null || m.category?.id === categoryFilter) &&
+      (categoryFilter === null || m.categories.some((c) => c.id === categoryFilter)) &&
       (dayFilter === null || m.day === dayFilter),
   );
 
@@ -47,7 +47,7 @@ export function MarketsClient({ markets, balance }: { markets: Market[]; balance
             dayFilter === null ? "border-accent bg-accent text-white" : "border-felt-600 text-neutral-400"
           }`}
         >
-          Alle dage
+          Alle
         </button>
         {MARKET_DAYS.map((d) => (
           <button
@@ -74,7 +74,7 @@ export function MarketsClient({ markets, balance }: { markets: Market[]; balance
                 : "border-felt-600 text-neutral-400"
             }`}
           >
-            Alle kategorier
+            Alle
           </button>
           {categories.map((c) => (
             <button
@@ -135,11 +135,14 @@ function MarketCard({
         <span className="inline-block rounded-full border border-felt-600 px-2 py-0.5 text-[10px] uppercase tracking-wider text-neutral-400">
           {market.day}
         </span>
-        {market.category && (
-          <span className="inline-block rounded-full border border-felt-600 px-2 py-0.5 text-[10px] uppercase tracking-wider text-neutral-400">
-            {market.category.name}
+        {market.categories.map((c) => (
+          <span
+            key={c.id}
+            className="inline-block rounded-full border border-felt-600 px-2 py-0.5 text-[10px] uppercase tracking-wider text-neutral-400"
+          >
+            {c.name}
           </span>
-        )}
+        ))}
       </div>
       <h3 className="font-display text-2xl tracking-wide text-neutral-100">{market.title}</h3>
       {market.description && (

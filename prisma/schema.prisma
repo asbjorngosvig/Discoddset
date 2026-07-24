@@ -46,7 +46,20 @@ model Category {
   name      String   @unique
   createdAt DateTime @default(now())
 
-  markets Market[]
+  markets MarketCategory[]
+}
+
+// Join row: a market tagged with a category. A market can have several
+// (e.g. both "Specials" and "Øl-maraton"), unlike day, which is single.
+model MarketCategory {
+  id         String   @id @default(cuid())
+  marketId   String
+  market     Market   @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([marketId, categoryId])
 }
 
 model Market {
@@ -62,14 +75,12 @@ model Market {
   // Fixed trip schedule, not admin-creatable like Category.
   day String @default("Hele turen")
 
-  categoryId String?
-  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  categories MarketCategory[]
 
   outcomes Outcome[]
   blocks   MarketBlock[]
 
   @@index([status])
-  @@index([categoryId])
   @@index([day])
 }
 

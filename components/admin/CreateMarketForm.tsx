@@ -58,18 +58,19 @@ export function CreateMarketForm({
         ))}
       </select>
       {categories.length > 0 && (
-        <select
-          name="categoryId"
-          defaultValue=""
-          className="w-full rounded-lg border border-felt-600 bg-felt-800 px-3 py-2 text-sm text-neutral-100 focus:border-accent focus:outline-none"
-        >
-          <option value="">Ingen kategori</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        <div>
+          <p className="mb-1 text-xs uppercase tracking-wider text-neutral-500">
+            Kategorier (valgfri, flere mulige)
+          </p>
+          <div className="grid grid-cols-2 gap-x-2 gap-y-1 rounded-lg border border-felt-600 bg-felt-800 p-2">
+            {categories.map((c) => (
+              <label key={c.id} className="flex items-center gap-2 text-sm text-neutral-300">
+                <input type="checkbox" name="categoryId" value={c.id} />
+                {c.name}
+              </label>
+            ))}
+          </div>
+        </div>
       )}
       <div className="space-y-2">
         {Array.from({ length: outcomeCount }).map((_, i) => (

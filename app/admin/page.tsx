@@ -22,7 +22,7 @@ export default async function AdminPage({
   const [activeMarkets, historyMarkets, players, categories, marketBlocks] = await Promise.all([
     prisma.market.findMany({
       where: { status: { in: [MarketStatus.OPEN, MarketStatus.CLOSED] } },
-      include: { outcomes: true },
+      include: { outcomes: true, categories: true },
       orderBy: { createdAt: "desc" },
     }),
     prisma.market.findMany({
@@ -53,7 +53,7 @@ export default async function AdminPage({
         description: market.description,
         status: market.status as "OPEN" | "CLOSED",
         closesAt: market.closesAt ? market.closesAt.toISOString() : null,
-        categoryId: market.categoryId,
+        categoryIds: market.categories.map((c) => c.categoryId),
         day: market.day,
         hasBets,
         outcomes: market.outcomes.map((o) => {

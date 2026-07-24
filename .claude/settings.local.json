@@ -29,7 +29,10 @@
       "Bash(git commit *)",
       "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Select-Object Id,Path\")",
       "Bash(powershell -Command \"Stop-Process -Id 14180,20744,21208 -Force -ErrorAction SilentlyContinue\")",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(rm \"C:/Desktop/Discoddset/check-state.ts\")",
+      "Bash(npx vercel *)",
+      "Bash(node -e \"console.log\\(new Date\\(\\).toISOString\\(\\).replace\\(/[-:]/g,''\\).replace\\(/\\\\..+/,''\\).replace\\('T',''\\)\\)\")"
     ],
     "defaultMode": "auto"
   }

@@ -14,7 +14,7 @@ export default async function MarketsPage() {
       where: { status: MarketStatus.OPEN },
       include: {
         outcomes: { include: { bets: { where: { status: BetStatus.PENDING }, select: { stake: true } } } },
-        category: true,
+        categories: { include: { category: true } },
       },
       orderBy: { createdAt: "asc" },
     }),
@@ -39,7 +39,7 @@ export default async function MarketsPage() {
       title: m.title,
       description: m.description,
       closesAt: m.closesAt ? m.closesAt.toISOString() : null,
-      category: m.category ? { id: m.category.id, name: m.category.name } : null,
+      categories: m.categories.map((mc) => ({ id: mc.category.id, name: mc.category.name })),
       day: m.day,
       blocked: blockedMarketIds.has(m.id),
       totalStaked,

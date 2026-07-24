@@ -32,7 +32,7 @@ type Market = {
   status: "OPEN" | "CLOSED";
   closesAt: string | null;
   hasBets: boolean;
-  categoryId: string | null;
+  categoryIds: string[];
   day: string;
   outcomes: Outcome[];
 };
@@ -58,8 +58,17 @@ export function MarketAdminCard({
   const [editingMarket, setEditingMarket] = useState(false);
   const [titleDraft, setTitleDraft] = useState(market.title);
   const [descriptionDraft, setDescriptionDraft] = useState(market.description ?? "");
-  const [categoryDraft, setCategoryDraft] = useState(market.categoryId ?? "");
+  const [categoryDraftIds, setCategoryDraftIds] = useState<Set<string>>(new Set(market.categoryIds));
   const [dayDraft, setDayDraft] = useState(market.day);
+
+  function toggleCategoryDraft(categoryId: string, checked: boolean) {
+    setCategoryDraftIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(categoryId);
+      else next.delete(categoryId);
+      return next;
+    });
+  }
 
   const [renamingOutcomeId, setRenamingOutcomeId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
@@ -138,18 +147,18 @@ export function MarketAdminCard({
                 ))}
               </select>
               {categories.length > 0 && (
-                <select
-                  value={categoryDraft}
-                  onChange={(e) => setCategoryDraft(e.target.value)}
-                  className="w-full rounded-lg border border-felt-600 bg-felt-800 px-3 py-2 text-sm text-neutral-100 focus:border-accent focus:outline-none"
-                >
-                  <option value="">Ingen kategori</option>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1 rounded-lg border border-felt-600 bg-felt-800 p-2">
                   {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
+                    <label key={c.id} className="flex items-center gap-2 text-sm text-neutral-300">
+                      <input
+                        type="checkbox"
+                        checked={categoryDraftIds.has(c.id)}
+                        onChange={(e) => toggleCategoryDraft(c.id, e.target.checked)}
+                      />
                       {c.name}
-                    </option>
+                    </label>
                   ))}
-                </select>
+                </div>
               )}
               <div className="flex gap-2">
                 <button
@@ -159,7 +168,7 @@ export function MarketAdminCard({
                     setEditingMarket(false);
                     setTitleDraft(market.title);
                     setDescriptionDraft(market.description ?? "");
-                    setCategoryDraft(market.categoryId ?? "");
+                    setCategoryDraftIds(new Set(market.categoryIds));
                     setDayDraft(market.day);
                   }}
                 >
@@ -176,7 +185,7 @@ export function MarketAdminCard({
                           marketId: market.id,
                           title: titleDraft,
                           description: descriptionDraft,
-                          categoryId: categoryDraft,
+                          categoryIds: Array.from(categoryDraftIds),
                           day: dayDraft,
                         }),
                       () => setEditingMarket(false),
@@ -191,6 +200,14 @@ export function MarketAdminCard({
             <>
               <h3 className="font-display text-2xl leading-tight text-neutral-100">{market.title}</h3>
               {market.description && <p className="text-sm text-neutral-400">{market.description}</p>}
+              {market.categoryIds.length > 0 && (
+                <p className="mt-1 text-xs text-neutral-500">
+                  {market.categoryIds
+                    .map((id) => categories.find((c) => c.id === id)?.name)
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
+              )}
             </>
           )}
         </div>

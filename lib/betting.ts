@@ -246,10 +246,10 @@ export async function updateMarket(params: {
   marketId: string;
   title: string;
   description: string | null;
-  categoryId: string | null;
+  categoryIds: string[];
   day: string;
 }) {
-  const { marketId, title, description, categoryId, day } = params;
+  const { marketId, title, description, categoryIds, day } = params;
   if (!title.trim()) {
     throw new BettingError("Markedet skal have en titel.");
   }
@@ -264,9 +264,16 @@ export async function updateMarket(params: {
       throw new BettingError("Afgjorte eller annullerede markeder kan ikke redigeres.");
     }
 
+    await tx.marketCategory.deleteMany({ where: { marketId } });
+    if (categoryIds.length > 0) {
+      await tx.marketCategory.createMany({
+        data: categoryIds.map((categoryId) => ({ marketId, categoryId })),
+      });
+    }
+
     return tx.market.update({
       where: { id: marketId },
-      data: { title: title.trim(), description, categoryId, day },
+      data: { title: title.trim(), description, day },
     });
   });
 }
